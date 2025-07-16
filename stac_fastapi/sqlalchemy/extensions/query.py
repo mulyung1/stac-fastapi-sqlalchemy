@@ -11,8 +11,8 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, Optional, Union
 
 import sqlalchemy as sa
-from pydantic import BaseModel, ValidationError, root_validator
-from pydantic.error_wrappers import ErrorWrapper
+from pydantic import BaseModel, ValidationError, root_validator, model_validator
+#from pydantic.error_wrappers import ErrorWrapper
 from stac_fastapi.extensions.core.query import QueryExtension as QueryExtensionBase
 from stac_pydantic.utils import AutoValueEnum
 
@@ -102,7 +102,7 @@ class QueryExtensionPostRequest(BaseModel):
 
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def validate_query_fields(cls, values: Dict) -> Dict:
         """Validate query fields."""
         logger.debug(f"Validating SQLAlchemySTACSearch {cls} {values}")
@@ -112,10 +112,10 @@ class QueryExtensionPostRequest(BaseModel):
                 if field_name not in queryable_fields:
                     raise ValidationError(
                         [
-                            ErrorWrapper(
-                                ValueError(f"Cannot search on field: {field_name}"),
-                                "STACSearch",
-                            )
+                            {
+                                'loc': ('query', field_name), 
+                                'msg': f"Cannot search on field: {field_name}", 'type': 'value_error'
+                            }
                         ],
                         QueryExtensionPostRequest,
                     )
