@@ -10,7 +10,8 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
     Items,
 )
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.core import BaseTransactionsClient
+#from stac_fastapi.types.core import BaseTransactionsClient
+from stac_fastapi.extensions.core.transaction.client import BaseTransactionsClient  #base client for transactions
 from stac_fastapi.types.errors import NotFoundError
 from starlette.responses import Response
 
@@ -157,6 +158,12 @@ class TransactionsClient(BaseTransactionsClient):
                 raise NotFoundError(f"Collection {collection_id} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
+        
+    def patch_item(self, item_id: str, collection_id: str, item: dict, **kwargs):
+        raise HTTPException(status_code=501, detail="Not implemented")
+
+    def patch_collection(self, collection_id: str, collection: dict, **kwargs):
+        raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @attr.s
