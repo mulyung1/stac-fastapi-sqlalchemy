@@ -104,7 +104,7 @@ class ItemSerializer(Serializer):
         for field in Settings.get().indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = stac_data["properties"][field]
-            if field == "datetime":
+            if field == "datetime" and isinstance(field_value, str):
                 field_value = rfc3339_str_to_datetime(field_value)
             indexed_fields[field.split(":")[-1]] = field_value
 
@@ -118,6 +118,11 @@ class ItemSerializer(Serializer):
         geometry = stac_data["geometry"]
         if geometry is not None:
             geometry = json.dumps(geometry)
+
+        #print(stac_data)
+        properties =stac_data['properties']
+        properties['datetime'] = properties['datetime'].isoformat()
+        properties['created'] = properties['created'].isoformat()
 
         return database.Item(
             id=stac_data["id"],

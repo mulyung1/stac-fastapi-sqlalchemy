@@ -44,7 +44,7 @@ class TransactionsClient(BaseTransactionsClient):
     ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
-
+        item = item.to_dict()
         # If a feature collection is posted
         if item["type"] == "FeatureCollection":
             bulk_client = BulkTransactionsClient(session=self.session)
@@ -77,6 +77,8 @@ class TransactionsClient(BaseTransactionsClient):
     def update_item(
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
+        
+        
         """Update item."""
         body_collection_id = item.get("collection")
         if body_collection_id is not None and collection_id != body_collection_id:
