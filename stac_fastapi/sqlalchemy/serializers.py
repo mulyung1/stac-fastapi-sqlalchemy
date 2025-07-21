@@ -119,10 +119,10 @@ class ItemSerializer(Serializer):
         if geometry is not None:
             geometry = json.dumps(geometry)
 
-        #print(stac_data)
         properties =stac_data['properties']
-        properties['datetime'] = properties['datetime'].isoformat()
-        properties['created'] = properties['created'].isoformat()
+        if type(properties) != dict:
+            properties['datetime'] = properties['datetime'].isoformat()
+            properties['created'] = properties['created'].isoformat()
 
         return database.Item(
             id=stac_data["id"],
