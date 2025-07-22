@@ -249,15 +249,14 @@ class CollectionSerializer(Serializer):
             "summaries": summaries_serialized
         })
             
-        print(json.dumps(stac_data, indent=4))
-        # #print(stac_data)
+        #print(json.dumps(stac_data, indent=4))
+        #print(stac_data)
         stac_data.pop('assets', None)  
 
-        # #verify serialization works
-        # try:
-        #     json.dumps(stac_data, indent=4)
-        # except TypeError as e:
-        #     print(f"Serialization error: {e}")
+        #verify serialization works
+        try:
+            json.dumps(stac_data, indent=4)
+        except TypeError as e:
+            print(f"Serialization error: {e}")
         
-        #print(f"Stac data:{dict(stac_data)}")
         return database.Collection(**dict(stac_data))

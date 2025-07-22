@@ -78,7 +78,7 @@ class TransactionsClient(BaseTransactionsClient):
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         
-        
+        item = item.to_dict()
         """Update item."""
         body_collection_id = item.get("collection")
         if body_collection_id is not None and collection_id != body_collection_id:
@@ -117,7 +117,7 @@ class TransactionsClient(BaseTransactionsClient):
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == collection["id"]
+                self.collection_table.id == collection.id
             )
             if not query.scalar():
                 raise NotFoundError(f"Item {collection['id']} not found")
