@@ -2,7 +2,7 @@
 import abc
 import json
 from typing import TypedDict
-
+import datetime
 import attr
 import geoalchemy2 as ga
 from pystac.utils import datetime_to_str
@@ -100,6 +100,11 @@ class ItemSerializer(Serializer):
         cls, stac_data: TypedDict, exclude_geometry: bool = False
     ) -> database.Item:
         """Transform stac item to database model."""
+        #bulk items endpoint brings in a dictionarty, while the items endpoint brings in a pystac Item object
+        #we work with dictionaries.... easy to manipulate
+        if type(stac_data) is not dict:
+            stac_data = stac_data.to_dict()
+
         indexed_fields = {}
         for field in Settings.get().indexed_fields:
             # Use getattr to accommodate extension namespaces
@@ -119,10 +124,16 @@ class ItemSerializer(Serializer):
         if geometry is not None:
             geometry = json.dumps(geometry)
 
-        properties =stac_data['properties']
-        if type(properties) != dict:
-            properties['datetime'] = properties['datetime'].isoformat()
-            properties['created'] = properties['created'].isoformat()
+        #make the datetime objects json serializable
+        properties = stac_data['properties']
+        dt = properties['datetime']
+        if  type(dt) == datetime.datetime:
+            properties['datetime'] = dt.isoformat()
+        
+        cr = properties['created']
+        if type(cr) == datetime.datetime:
+            properties['created'] = cr.isoformat()
+        
 
         return database.Item(
             id=stac_data["id"],
@@ -131,7 +142,7 @@ class ItemSerializer(Serializer):
             stac_extensions=stac_data.get("stac_extensions"),
             geometry=geometry,
             bbox=stac_data.get("bbox"),
-            properties=stac_data["properties"],
+            properties=properties,
             assets=stac_data["assets"],
             **indexed_fields,
         )
@@ -173,10 +184,80 @@ class CollectionSerializer(Serializer):
         if db_model.summaries:
             collection["summaries"] = db_model.summaries
         return collection
-
     @classmethod
-    def stac_to_db(
-        cls, stac_data: TypedDict, exclude_geometry: bool = False
-    ) -> database.Collection:
-        """Transform stac collection to database model."""
+    def stac_to_db(cls, stac_data: TypedDict, exclude_geometry: bool = False) -> database.Collection:
+        """Transform STAC collection to database model."""
+
+        #handle Extent with datetime conversion
+        extent = stac_data.extent
+        print(type(extent))
+        extent_dict = {
+            "spatial": {"bbox": extent.spatial.bbox}
+        }
+        
+        #convert temporal intervals (handles nested datetime objects)
+        temporal_intervals = []
+        for interval in extent.temporal.interval:
+            if interval:  # Check if interval exists
+                serialized_interval = []
+                for dt in interval:
+                    #convert datetime to ISO string if exists
+                    serialized_interval.append(
+                        dt.isoformat() if isinstance(dt, datetime.datetime) else dt
+                    )
+                temporal_intervals.append(serialized_interval)
+        
+        extent_dict["temporal"] = {"interval": temporal_intervals}
+
+        #transform providers into JSON-serializable dicts
+        providers = stac_data.providers
+        lis=[Provider.to_dict() for Provider in providers]
+        #print(lis)
+
+        #transform range into JSON-serializable dicts
+        summaries = stac_data.summaries
+        summaries_serialized = {
+            key: value.to_dict() if hasattr(value, "to_dict") else value
+            for key, value in summaries.items()
+        }
+        #print(f"Summaries serialized: {summaries_serialized}")
+
+        #transform links into JSON-serializable dicts
+        links=stac_data.links.root
+        #print(f'{links}, type: {type(links)}')
+        #links is of type list of dictionaries.
+        #convert the Links object to a JSON serializable list of dictionaries
+        links_dict = [
+            {
+                "href": link.href,
+                "rel": link.rel,
+                "type": link.type,
+                "title":link.title,
+            }
+            for link in links
+        ]
+        #print(f'Linkssss: {links_dict}')
+
+        #add the serialised dict to a dict
+        stac_data=dict(stac_data)
+
+        stac_data.update({
+            #"stac_extensions": extensions,
+            "providers": lis,
+            "extent": extent_dict,
+            "links": links_dict,
+            "summaries": summaries_serialized
+        })
+            
+        print(json.dumps(stac_data, indent=4))
+        # #print(stac_data)
+        stac_data.pop('assets', None)  
+
+        # #verify serialization works
+        # try:
+        #     json.dumps(stac_data, indent=4)
+        # except TypeError as e:
+        #     print(f"Serialization error: {e}")
+        
+        #print(f"Stac data:{dict(stac_data)}")
         return database.Collection(**dict(stac_data))
