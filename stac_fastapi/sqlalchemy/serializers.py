@@ -5,6 +5,7 @@ from typing import TypedDict
 import datetime
 import attr
 import geoalchemy2 as ga
+from shapely.geometry import shape, box
 from pystac.utils import datetime_to_str
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
@@ -101,8 +102,9 @@ class ItemSerializer(Serializer):
             assets=db_model.assets,
         )
 
-        return item
+        #print(f'id: {item['id']}: {type(item)}')
 
+        return item
 
     @classmethod
     def stac_to_db(
@@ -142,13 +144,18 @@ class ItemSerializer(Serializer):
         cr = properties['created']
         if type(cr) == datetime.datetime:
             properties['created'] = cr.isoformat()
+
+        stac_extensions = stac_data['stac_extensions']
+        extensions = [str(ext) for ext in stac_extensions] if stac_extensions else []
+        
+        #print(stac_data)
         
 
         return database.Item(
             id=stac_data["id"],
             collection_id=stac_data["collection"],
             stac_version=stac_data["stac_version"],
-            stac_extensions=stac_data.get("stac_extensions"),
+            stac_extensions=extensions,
             geometry=geometry,
             bbox=stac_data.get("bbox"),
             properties=properties,
@@ -156,7 +163,7 @@ class ItemSerializer(Serializer):
             **indexed_fields,
         )
 
-
+        
 class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
