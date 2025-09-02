@@ -42,7 +42,6 @@ class Serializer(abc.ABC):
                 d[column.name] = value
         return d
 
-
 class ItemSerializer(Serializer):
     """Serialization methods for STAC items."""
 
@@ -74,15 +73,22 @@ class ItemSerializer(Serializer):
         # TODO: It's probably best to just remove the custom geometry type
         geometry = db_model.geometry
         if isinstance(geometry, ga.elements.WKBElement):
-            geometry = ga.shape.to_shape(geometry).__geo_interface__
+            geometry = shape(geometry).__geo_interface__
         if isinstance(geometry, str):
             geometry = json.loads(geometry)
-
+    
         bbox = db_model.bbox
         if bbox is not None:
             bbox = [float(x) for x in db_model.bbox]
 
-        return stac_types.Item(
+        #get bbox from geom
+        if geometry is None:
+            geom = None
+        else:
+            geom = shape(geometry)
+            bbox = list(geom.bounds)
+
+        item = stac_types.Item(
             type="Feature",
             stac_version=db_model.stac_version,
             stac_extensions=stac_extensions,
@@ -94,6 +100,9 @@ class ItemSerializer(Serializer):
             links=item_links,
             assets=db_model.assets,
         )
+
+        return item
+
 
     @classmethod
     def stac_to_db(
