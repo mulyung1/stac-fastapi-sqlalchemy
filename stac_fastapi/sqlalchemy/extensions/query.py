@@ -15,7 +15,7 @@ from pydantic import BaseModel, ValidationError, root_validator, model_validator
 #from pydantic.error_wrappers import ErrorWrapper
 from stac_fastapi.extensions.core.query import QueryExtension as QueryExtensionBase
 from stac_pydantic.utils import AutoValueEnum
-
+from stac_fastapi.types.search import BaseSearchPostRequest
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -99,10 +99,11 @@ class QueryExtensionPostRequest(BaseModel):
     Add queryables validation to the POST request
     to raise errors for unsupported querys.
     """
-
-    query: Optional[Dict[Queryables, Dict[Operator, Any]]]
+    #added `= None` to make it fully optional
+    query: Optional[Dict[Queryables, Dict[Operator, Any]]] = None
 
     @model_validator(mode="before")
+    #@root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
         """Validate query fields."""
         logger.debug(f"Validating SQLAlchemySTACSearch {cls} {values}")

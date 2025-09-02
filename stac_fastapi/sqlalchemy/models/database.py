@@ -10,29 +10,27 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from stac_fastapi.sqlalchemy.extensions.query import Queryables, QueryableTypes
 
-BaseModel = declarative_base()
 
+from shapely import wkb
+import json
+
+BaseModel = declarative_base()
 
 class GeojsonGeometry(ga.Geometry):
     """Custom geoalchemy type which returns GeoJSON."""
-
+    
     from_text = "ST_GeomFromGeoJSON"
 
     def result_processor(self, dialect: str, coltype):
-        """Override default processer to return GeoJSON."""
-
+        """Override default processor to return GeoJSON."""
+        
         def process(value: Optional[bytes]):
             if value is not None:
-                geom = ga.shape.to_shape(
-                    ga.elements.WKBElement(
-                        value, srid=self.srid, extended=self.extended
-                    )
-                )
+                # Load directly using shapely
+                geom = wkb.loads(bytes(value))
                 return json.loads(json.dumps(geom.__geo_interface__))
-
+        
         return process
-
-
 class Collection(BaseModel):  # type:ignore
     """Collection orm model."""
 

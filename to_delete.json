@@ -1,0 +1,157 @@
+{
+    "type": "Feature",
+    "stac_version": "1.0.0",
+    "stac_extensions": [
+        "https://landsat.usgs.gov/stac/landsat-ard-extension/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/projection/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json",
+        "https://stac-extensions.github.io/storage/v1.0.0/schema.json"
+    ],
+    "id": "LE07_CU_002012_20150101_20210502_02_BA",
+    "collection": "test-collection",
+    "geometry": None,
+    "bbox": None,
+    "properties": {
+        "created": "2022-02-08T20:07:38.885Z",
+        "updated": "2025-09-01T12:33:58.386866Z",
+        "datetime": "2015-01-01T18:39:12.488535Z",
+        "platform": "LANDSAT_7",
+        "proj:epsg": None,
+        "proj:shape": [
+            5000,
+            5000
+        ],
+        "instruments": [
+            "ETM"
+        ],
+        "landsat:fill": 95.4286,
+        "eo:cloud_cover": 0.0759,
+        "proj:transform": [
+            30,
+            0,
+            -2265585,
+            0,
+            -30,
+            1514805
+        ],
+        "landsat:grid_region": "CU",
+        "landsat:scene_count": 1,
+        "landsat:grid_vertical": "12",
+        "landsat:snow_ice_cover": 0,
+        "landsat:grid_horizontal": "02",
+        "landsat:cloud_shadow_cover": 0.1394
+    },
+    "links": [
+        {
+            "rel": <Relations.self: "self">,
+            "type": <MimeTypes.geojson: "application/geo+json">,
+            "href": "http://testserver/collections/test-collection/items/LE07_CU_002012_20150101_20210502_02_BA"
+        },
+        {
+            "rel": <Relations.parent: "parent">,
+            "type": <MimeTypes.json: "application/json">,
+            "href": "http://testserver/collections/test-collection"
+        },
+        {
+            "rel": <Relations.collection: "collection">,
+            "type": <MimeTypes.json: "application/json">,
+            "href": "http://testserver/collections/test-collection"
+        },
+        {
+            "rel": <Relations.root: "root">,
+            "type": <MimeTypes.json: "application/json">,
+            "href": "http://testserver/"
+        }
+    ],
+    "assets": {
+        "bc": {
+            "href": "https://landsatlook.usgs.gov/level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_BC.TIF",
+            "type": "image/vnd.stac.geotiff; cloud-optimized=true",
+            "roles": [
+                "data"
+            ],
+            "title": "Burn Classification",
+            "alternate": {
+                "s3": {
+                    "href": "s3://usgs-landsat-level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_BC.TIF",
+                    "storage:platform": "AWS",
+                    "storage:requester_pays": True
+                }
+            },
+            "description": "Collection 2 Level-3 Albers Burn Classification Burned Area"
+        },
+        "bp": {
+            "href": "https://landsatlook.usgs.gov/level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_BP.TIF",
+            "type": "image/vnd.stac.geotiff; cloud-optimized=true",
+            "roles": [
+                "data"
+            ],
+            "title": "Burn Probability",
+            "alternate": {
+                "s3": {
+                    "href": "s3://usgs-landsat-level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_BP.TIF",
+                    "storage:platform": "AWS",
+                    "storage:requester_pays": True
+                }
+            },
+            "description": "Collection 2 Level-3 Albers Burn Probability Burned Area"
+        },
+        "xml": {
+            "href": "https://landsatlook.usgs.gov/level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02.xml",
+            "type": "application/xml",
+            "roles": [
+                "metadata"
+            ],
+            "title": "Extensible Metadata File",
+            "alternate": {
+                "s3": {
+                    "href": "s3://usgs-landsat-level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02.xml",
+                    "storage:platform": "AWS",
+                    "storage:requester_pays": True
+                }
+            },
+            "description": "Collection 2 Level-3 Albers Extensible Metadata File Burned Area"
+        },
+        "json": {
+            "href": "https://landsatlook.usgs.gov/level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02.json",
+            "type": "application/json",
+            "roles": [
+                "metadata"
+            ],
+            "title": "Extensible Metadata File (json)",
+            "alternate": {
+                "s3": {
+                    "href": "s3://usgs-landsat-level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02.json",
+                    "storage:platform": "AWS",
+                    "storage:requester_pays": True
+                }
+            },
+            "description": "Collection 2 Level-3 Albers Extensible Metadata File (json) Burned Area"
+        },
+        "index": {
+            "href": "https://landsatlook.usgs.gov/stac-browser/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02",
+            "type": "text/html",
+            "roles": [
+                "metadata"
+            ],
+            "title": "HTML index page"
+        },
+        "quick_look": {
+            "href": "https://landsatlook.usgs.gov/level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_QuickLook.png",
+            "type": "image/png",
+            "roles": [
+                "data"
+            ],
+            "title": "Quick Look File",
+            "alternate": {
+                "s3": {
+                    "href": "s3://usgs-landsat-level-3/collection02/BA/2015/CU/002/012/LE07_CU_002012_20150101_20210502_02_BA/LE07_CU_002012_20150101_20210502_02_QuickLook.png",
+                    "storage:platform": "AWS",
+                    "storage:requester_pays": True
+                }
+            },
+            "description": "Collection 2 Level-3 Albers Quick Look File Burned Area"
+        }
+    }
+}

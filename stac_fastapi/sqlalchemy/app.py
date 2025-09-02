@@ -4,7 +4,7 @@ import os
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import (
-    ContextExtension,
+    #ContextExtension,
     FieldsExtension,
     SortExtension,
     TokenPaginationExtension,
@@ -30,7 +30,7 @@ extensions = [
     QueryExtension(),
     SortExtension(),
     TokenPaginationExtension(),
-    ContextExtension(),
+    #ContextExtension(),
 ]
 
 post_request_model = create_post_request_model(extensions)
@@ -39,11 +39,12 @@ api = StacApi(
     settings=settings,
     extensions=extensions,
     client=CoreCrudClient(
-        session=session, extensions=extensions, post_request_model=post_request_model
+        session=session, extensions=extensions , post_request_model=post_request_model
     ),
     search_get_request_model=create_get_request_model(extensions),
     search_post_request_model=post_request_model,
 )
+
 app = api.app
 
 
