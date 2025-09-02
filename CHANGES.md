@@ -1,5 +1,10 @@
 # Changelog
 
+## Updated
+
+* Api functionality updated to work with stacapi v6.0.0 release
+
+
 ## [Unreleased]
 
 As a part of this release, this repository was extracted from the main
