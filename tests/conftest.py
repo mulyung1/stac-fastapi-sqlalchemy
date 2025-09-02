@@ -6,7 +6,7 @@ import pytest
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
-    ContextExtension,
+    #ContextExtension,
     FieldsExtension,
     SortExtension,
     TokenPaginationExtension,
@@ -112,7 +112,7 @@ def api_client(db_session):
         TransactionExtension(
             client=TransactionsClient(session=db_session), settings=settings
         ),
-        ContextExtension(),
+        #ContextExtension(),
         SortExtension(),
         FieldsExtension(),
         QueryExtension(),

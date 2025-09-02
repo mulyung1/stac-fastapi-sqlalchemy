@@ -7,18 +7,19 @@ with open("README.md") as f:
 
 install_requires = [
     "attrs",
-    "pydantic[dotenv]",
-    "stac_pydantic>=2.0.3",
-    "stac-fastapi.types",
-    "stac-fastapi.api",
-    "stac-fastapi.extensions",
+    "pydantic",
+    "stac_pydantic",
+    "stac-fastapi.types==6.0.0",
+    "stac-fastapi.api==6.0.0",
+    "stac-fastapi.extensions==6.0.0",
     "sqlakeyset",
-    "geoalchemy2<0.14.0",
+    "geoalchemy2",
     "sqlalchemy==1.3.23",
     "shapely",
     "psycopg2-binary",
     "alembic",
     "fastapi-utils",
+    "typing_inspect",
 ]
 
 extra_reqs = {
@@ -34,7 +35,7 @@ extra_reqs = {
         "wheel",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]==0.19.0"],
+    "server": ["uvicorn[standard]==0.35.0"],
 }
 
 
@@ -48,7 +49,7 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.13",
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",

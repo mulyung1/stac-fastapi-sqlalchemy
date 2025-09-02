@@ -22,8 +22,9 @@ def test_create_collection(
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
+    
     resp = postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    assert Collection(**data).dict(exclude={"links"}) == Collection(**resp).dict(
+    assert Collection(**data).model_dump(exclude={"links"}) == Collection(**resp).model_dump(
         exclude={"links"}
     )
     coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
@@ -51,7 +52,7 @@ def test_update_collection(
 
     data["keywords"].append("new keyword")
     postgres_transactions.update_collection(data, request=MockStarletteRequest)
-
+    
     coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
     assert "new keyword" in coll["keywords"]
 
@@ -62,6 +63,7 @@ def test_delete_collection(
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
+    
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
 
     deleted = postgres_transactions.delete_collection(
@@ -78,9 +80,10 @@ def test_get_collection(
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
+    
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
     coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
-    assert Collection(**data).dict(exclude={"links"}) == Collection(**coll).dict(
+    assert Collection(**data).model_dump(exclude={"links"}) == Collection(**coll).model_dump(
         exclude={"links"}
     )
     assert coll["id"] == data["id"]
@@ -143,9 +146,9 @@ def test_create_item(
     resp = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert Item(**item).dict(
-        exclude={"links": ..., "properties": {"created", "updated"}}
-    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
+    assert Item(**item).model_dump(
+        exclude={"links": ..., "bbox":..., "properties": {"created", "updated"}}
+    ) == Item(**resp).model_dump(exclude={"links": ...,  "bbox":...,"properties": {"created", "updated"}})
 
 
 def test_create_item_already_exists(
@@ -187,9 +190,11 @@ def test_create_duplicate_item_different_collections(
     resp = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert Item(**item).dict(
-        exclude={"links": ..., "properties": {"created", "updated"}}
-    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
+
+    """exclude the bbox due to mismatching decimal places from the test data(5dps) and the db response(more than 5 dps)."""
+    assert Item(**item).model_dump(
+        exclude={"links": ...,  "bbox":..., "properties": {"created", "updated"}}
+    ) == Item(**resp).model_dump(exclude={"links": ...,  "bbox":..., "properties": {"created", "updated"}})
 
     # add item to test-collection-2
     item["collection"] = "test-collection-2"
@@ -201,9 +206,9 @@ def test_create_duplicate_item_different_collections(
     resp = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert Item(**item).dict(
-        exclude={"links": ..., "properties": {"created", "updated"}}
-    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
+    assert Item(**item).model_dump(
+        exclude={"links": ..., "bbox":...,  "properties": {"created", "updated"}}
+    ) == Item(**resp).model_dump(exclude={"links": ..., "bbox":..., "properties": {"created", "updated"}})
 
 
 def test_update_item(
@@ -332,6 +337,7 @@ def test_feature_collection_insert(
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
+
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
@@ -365,12 +371,15 @@ def test_landing_page_no_collection_title(
 ):
     class MockStarletteRequestWithApp(MockStarletteRequest):
         app = api_client.app
+        def url_for(self, name):
+            """Generate a URL path for the given route name using the app's routing system."""
+            return self.app.url_path_for(name)
 
     coll = load_test_data("test_collection.json")
     del coll["title"]
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    landing_page = postgres_core.landing_page(request=MockStarletteRequestWithApp)
+    landing_page = postgres_core.landing_page(request=MockStarletteRequestWithApp())
     for link in landing_page["links"]:
         if link["href"].split("/")[-1] == coll["id"]:
             assert link["title"]

@@ -44,7 +44,8 @@ class TransactionsClient(BaseTransactionsClient):
     ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
-        item = item.to_dict()
+        if type(item) != dict:
+            item = item.to_dict()
         # If a feature collection is posted
         if item["type"] == "FeatureCollection":
             bulk_client = BulkTransactionsClient(session=self.session)
@@ -77,8 +78,8 @@ class TransactionsClient(BaseTransactionsClient):
     def update_item(
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
-        
-        item = item.to_dict()
+        if type(item) != dict:
+            item = item.to_dict()
         """Update item."""
         body_collection_id = item.get("collection")
         if body_collection_id is not None and collection_id != body_collection_id:
@@ -114,10 +115,12 @@ class TransactionsClient(BaseTransactionsClient):
         self, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Update collection."""
+        if type(collection) != dict:
+            collection = collection.to_dict()
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == collection.id
+                self.collection_table.id == collection['id']
             )
             if not query.scalar():
                 raise NotFoundError(f"Item {collection['id']} not found")
@@ -160,10 +163,11 @@ class TransactionsClient(BaseTransactionsClient):
                 raise NotFoundError(f"Collection {collection_id} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
-        
+    # TODO: implement the method    
     def patch_item(self, item_id: str, collection_id: str, item: dict, **kwargs):
         raise HTTPException(status_code=501, detail="Not implemented")
 
+    # TODO: implement the method
     def patch_collection(self, collection_id: str, collection: dict, **kwargs):
         raise HTTPException(status_code=501, detail="Not implemented")
 

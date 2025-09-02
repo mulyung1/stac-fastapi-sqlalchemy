@@ -17,6 +17,7 @@ from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
+from stac_fastapi.api.models import create_post_request_model
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
@@ -49,8 +50,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
+<<<<<<< HEAD
     #added attribute post_request_model to the class core crud client
     post_request_model: type = attr.ib(factory=lambda: create_post_request_model([]))
+=======
+    post_request_model: type = attr.ib(factory=lambda: create_post_request_model([]))
+
+>>>>>>> tests/swagger_docs
     @staticmethod
     def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
@@ -130,7 +136,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     bbox_2d = [bbox[0], bbox[1], bbox[3], bbox[4]]
                     geom = ShapelyPolygon.from_bounds(*bbox_2d)
             if geom:
-                filter_geom = ga.shape.from_shape(geom, srid=4326)
+                # Ensure `geom` is a Shapely geometry
+                if not hasattr(geom, "wkt"):
+                    geom = shape(geom)
+
+                #convert to WKT
+                wkt = geom.wkt  
+
+                """use shapelys shape method, geoalchemy's shape attribute has been removed""" 
+                filter_geom = func.ST_GeomFromText(wkt, 4326)
+                #filter_geom = from_shape(geom, srid=4326)
                 query = query.filter(
                     ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
                 )
@@ -263,9 +278,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
+            "fields": fields,
             "query": json.loads(unquote_plus(query)) if query else query,
         }
-
+        #print(f"\n--------------------------------Parsed base_args---------------\n\n{base_args}")
         if datetime:
             base_args["datetime"] = datetime
 
@@ -295,13 +311,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 else:
                     includes.add(field)
             base_args["fields"] = {"include": includes, "exclude": excludes}
+            #print(f'-----------------------base args: {base_args["fields"]}--------------------------')
 
         # Do the request
         try:
             search_request = self.post_request_model(**base_args)
+            #print(f"\n------------------------------Validated search_request------\n\n", search_request)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
+        #print(f'\n------------------search response before pagination links----------------------\n\n{resp}\n\n{type(resp)}')
 
         # Pagination
         page_links = []
@@ -318,6 +337,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             else:
                 page_links.append(link)
         resp["links"] = page_links
+
         return resp
 
     def post_search(
@@ -398,11 +418,25 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         ]
                         geom = ShapelyPolygon.from_bounds(*bbox_2d)
 
+                # if geom:
+                #     filter_geom = ga.shape(geom, srid=4326)
+                #     query = query.filter(
+                #         ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
+                #     )
+                """geoalchemy has removed the shape attribute, we default to shapely"""
                 if geom:
-                    filter_geom = ga.shape.from_shape(geom, srid=4326)
+                    # Ensure `geom` is a Shapely geometry
+                    if not hasattr(geom, "wkt"):
+                        geom = shape(geom)
+
+                    # Convert to WKT
+                    wkt = geom.wkt  
+
+                    filter_geom = func.ST_GeomFromText(wkt, 4326)
                     query = query.filter(
-                        ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
+                        func.ST_Intersects(self.item_table.geometry, filter_geom)
                     )
+
 
                 # Temporal query
                 if search_request.datetime:
@@ -482,9 +516,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 response_features.append(
                     self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
+            #for i in response_features:
+                ##print(f'----------------response item(db_to_stac) --------------\n\n{i}')
 
-            # Use pydantic includes/excludes syntax to implement fields extension
+            #apply the fields extension logic
             if self.extension_is_enabled("FieldsExtension"):
+
+                include = getattr(search_request.fields, "include", set()) or set()
+                exclude = getattr(search_request.fields, "exclude", set()) or set()
+
+                #dynamically include query fields
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [
@@ -494,18 +535,26 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                             for k in search_request.query.keys()
                         ]
                     )
-                    if not search_request.fields.include:
-                        search_request.fields.include = query_include
-                    else:
-                        search_request.fields.include.union(query_include)
 
-                filter_kwargs = search_request.fields.filter_fields
-                # Need to pass through `.json()` for proper serialization
-                # of datetime
-                response_features = [
-                    json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
-                    for feat in response_features
-                ]
+                # Only pass if non-empty
+                if include and len(include) > 0:
+                    response_features = [
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json(include=include))
+                        for feat in response_features
+                    ]
+                    #print(f'---------------------------------fields extension response included------------------------\n\n{response_features}')
+                elif exclude and len(exclude) > 0:
+                    response_features = [
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json(exclude=exclude))
+                        for feat in response_features
+                    ]
+                    #print(f'---------------------------------fields extension response excluded------------------------\n\n{response_features}')
+
+                else:
+                    response_features = [
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json())
+                        for feat in response_features
+                    ]
 
         context_obj = None
         if self.extension_is_enabled("ContextExtension"):

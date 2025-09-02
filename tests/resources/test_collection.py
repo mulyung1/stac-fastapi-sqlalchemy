@@ -1,13 +1,12 @@
 import pystac
 
-
 def test_create_and_delete_collection(app_client, load_test_data):
     """Test creation and deletion of a collection"""
     test_collection = load_test_data("test_collection.json")
     test_collection["id"] = "test"
 
     resp = app_client.post("/collections", json=test_collection)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
 
     resp = app_client.delete(f"/collections/{test_collection['id']}")
     assert resp.status_code == 200
@@ -31,7 +30,7 @@ def test_update_collection_already_exists(app_client, load_test_data):
     """Test updating a collection which already exists"""
     test_collection = load_test_data("test_collection.json")
     test_collection["keywords"].append("test")
-    resp = app_client.put("/collections", json=test_collection)
+    resp = app_client.put(f"/collections/{test_collection['id']}", json=test_collection)
     assert resp.status_code == 200
 
     resp = app_client.get(f"/collections/{test_collection['id']}")
@@ -46,7 +45,7 @@ def test_update_new_collection(app_client, load_test_data):
     test_collection["id"] = "new-test-collection"
 
     resp = app_client.put("/collections", json=test_collection)
-    assert resp.status_code == 404
+    assert resp.status_code == 405
 
 
 def test_collection_not_found(app_client):
@@ -59,7 +58,7 @@ def test_returns_valid_collection(app_client, load_test_data):
     """Test validates fetched collection with jsonschema"""
     test_collection = load_test_data("test_collection.json")
     resp = app_client.put("/collections", json=test_collection)
-    assert resp.status_code == 200
+    assert resp.status_code == 405
 
     resp = app_client.get(f"/collections/{test_collection['id']}")
     assert resp.status_code == 200

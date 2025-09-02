@@ -30,5 +30,69 @@
                 ]
             ]
         }
+    },
+    "providers": [
+    {
+      "name": "United",
+      "description": "Primary producers and distributors of satellite data.",
+      "roles": [
+        "producer",
+        "processor"
+      ],
+      "url": "https://www.uov/"
+    },
+    {
+      "name": "NASA",
+      "description": "Partners in the program, providing satellite operations and data collection.",
+      "roles": [
+        "instrument, spacecraft & launch vehicle developer",
+        "mission on-orbit verifier"
+      ],
+      "url": "https://www.gov/"
+    },
+    {
+      "name": "provider5",
+      "description": "Converted 30m to 250m tiles for Africa.",
+      "roles": [
+        "processor",
+        "host"
+      ],
+      "url": "https://www.world-portal/"
     }
+  ],
+    "summaries": {
+    "platform": [
+      "8"
+    ],
+    "constellation": [
+      "at"
+    ],
+    "instruments": [
+      "1",
+      "2"
+    ],
+    "proj:code": [
+      "EPSG:4326"
+    ],
+    "gsd": {
+      "minimum": 1,
+      "maximum": 2
+    },
+    "eo:cloud_cover": {
+      "minimum": 1,
+      "maximum": 2
+    },
+    "view:sun_elevation": {
+      "minimum": 1,
+      "maximum": 2
+    },
+    "view:off_nadir": {
+      "minimum": 1,
+      "maximum": 2
+    },
+    "view:sun_azimuth": {
+      "minimum": 1,
+      "maximum": 2
+    }
+  }
 }
