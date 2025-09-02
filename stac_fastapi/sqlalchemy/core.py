@@ -273,10 +273,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
-            #"fields": fields,
+            "fields": fields,
             "query": json.loads(unquote_plus(query)) if query else query,
         }
-        print(f"\n--------------------------------Parsed base_args---------------\n\n{base_args}")
+        #print(f"\n--------------------------------Parsed base_args---------------\n\n{base_args}")
         if datetime:
             base_args["datetime"] = datetime
 
@@ -306,15 +306,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 else:
                     includes.add(field)
             base_args["fields"] = {"include": includes, "exclude": excludes}
+            #print(f'-----------------------base args: {base_args["fields"]}--------------------------')
 
         # Do the request
         try:
             search_request = self.post_request_model(**base_args)
-            print(f"\n------------------------------Validated search_request------\n\n", search_request)
+            #print(f"\n------------------------------Validated search_request------\n\n", search_request)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
-        print(f'\n------------------search response before pagination links----------------------\n\n{resp}\n\n{type(resp)}')
+        #print(f'\n------------------search response before pagination links----------------------\n\n{resp}\n\n{type(resp)}')
 
         # Pagination
         page_links = []
@@ -510,34 +511,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 response_features.append(
                     self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
-            for i in response_features:
-                print(f'----------------response item(db_to_stac) --------------\n\n{i}')
+            #for i in response_features:
+                ##print(f'----------------response item(db_to_stac) --------------\n\n{i}')
 
-            # # Use pydantic includes/excludes syntax to implement fields extension
-            # if self.extension_is_enabled("FieldsExtension"):
-            #     include = getattr(search_request.fields, "include", None)
-            #     exclude = getattr(search_request.fields, "exclude", None)
-            #     # Only pass if non-empty
-            #     if (include and len(include) > 0) or (exclude and len(exclude) > 0):
-            #         response_features = [
-            #             json.loads(stac_pydantic.Item(**feat).json(include=include, exclude=exclude))
-            #             for feat in response_features
-            #         ]
-                    
-            #         print(f'---------------------------------fields extesion response------------------------\n\n{response_features}')
-            #     else:
-            #         response_features = [
-            #             json.loads(stac_pydantic.Item(**feat).json())
-            #             for feat in response_features
-            #         ]
-
-            # Use pydantic includes/excludes syntax to implement fields extension
+            #apply the fields extension logic
             if self.extension_is_enabled("FieldsExtension"):
 
-                # Dynamically include query fields
                 include = getattr(search_request.fields, "include", set()) or set()
                 exclude = getattr(search_request.fields, "exclude", set()) or set()
 
+                #dynamically include query fields
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [
@@ -549,15 +532,22 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     )
 
                 # Only pass if non-empty
-                if (include and len(include) > 0) or (exclude and len(exclude) > 0):
+                if include and len(include) > 0:
                     response_features = [
-                        json.loads(stac_pydantic.Item(**feat).json(include=include, exclude=exclude))
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json(include=include))
                         for feat in response_features
                     ]
-                    print(f'---------------------------------fields extension response------------------------\n\n{response_features}')
+                    #print(f'---------------------------------fields extension response included------------------------\n\n{response_features}')
+                elif exclude and len(exclude) > 0:
+                    response_features = [
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json(exclude=exclude))
+                        for feat in response_features
+                    ]
+                    #print(f'---------------------------------fields extension response excluded------------------------\n\n{response_features}')
+
                 else:
                     response_features = [
-                        json.loads(stac_pydantic.Item(**feat).json())
+                        json.loads(stac_pydantic.Item(**feat).model_dump_json())
                         for feat in response_features
                     ]
 

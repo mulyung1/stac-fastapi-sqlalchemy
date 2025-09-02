@@ -163,10 +163,11 @@ class TransactionsClient(BaseTransactionsClient):
                 raise NotFoundError(f"Collection {collection_id} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
-        
+    # TODO: implement the method    
     def patch_item(self, item_id: str, collection_id: str, item: dict, **kwargs):
         raise HTTPException(status_code=501, detail="Not implemented")
 
+    # TODO: implement the method
     def patch_collection(self, collection_id: str, collection: dict, **kwargs):
         raise HTTPException(status_code=501, detail="Not implemented")
 
