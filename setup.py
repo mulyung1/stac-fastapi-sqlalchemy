@@ -19,7 +19,7 @@ install_requires = [
     "psycopg2-binary",
     "alembic",
     "fastapi-utils",
-    "typing_inspect",
+    "typing-inspect",
 ]
 
 extra_reqs = {
