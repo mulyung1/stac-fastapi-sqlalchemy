@@ -21,8 +21,10 @@ STAC_TRANSACTION_ROUTES = [
     "DELETE /collections/{collection_id}/items/{item_id}",
     "POST /collections",
     "POST /collections/{collection_id}/items",
-    "PUT /collections",
+    "PUT /collections/{collection_id}",
     "PUT /collections/{collection_id}/items/{item_id}",
+    "PATCH /collections/{collection_id}/items/{item_id}",
+    "PATCH /collections/{collection_id}",
 ]
 
 
@@ -66,31 +68,6 @@ def test_transactions_router(api_client):
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not transaction_routes - api_routes
-
-# def test_transactions_router(api_client):
-#     transaction_routes = set(STAC_TRANSACTION_ROUTES)
-#     api_routes = set(
-#         f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes
-#     )
-
-#     print("\nEXPECTED TRANSACTION ROUTES:")
-#     for r in sorted(transaction_routes):
-#         print(r)
-
-#     print("\nACTUAL API ROUTES:")
-#     for r in sorted(api_routes):
-#         print(r)
-
-#     print("\nMISSING ROUTES:")
-#     for r in sorted(transaction_routes - api_routes):
-#         print(r)
-
-#     print("\nEXTRA ROUTES (in API but not expected):")
-#     for r in sorted(api_routes - transaction_routes):
-#         print(r)
-
-#     # Original assertion (kept so test still fails if mismatch exists)
-#     assert not transaction_routes - api_routes
 
 
 def test_app_transaction_extension(app_client, load_test_data):
@@ -143,7 +120,7 @@ def test_app_search_response_geometry_null(
     assert resp.status_code == 200
     resp_json = resp.json()
 
-    print(f'------------------------------------resp json oi test_app_search_response_geometry_null---------------------\n\n{resp_json}')
+    #print(f'------------------------------------resp json oi test_app_search_response_geometry_null---------------------\n\n{resp_json}')
 
     assert resp_json.get("type") == "FeatureCollection"
     assert resp_json.get("features")[0]["geometry"] is None
