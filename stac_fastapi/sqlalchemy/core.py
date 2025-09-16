@@ -50,13 +50,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
-<<<<<<< HEAD
+
     #added attribute post_request_model to the class core crud client
     post_request_model: type = attr.ib(factory=lambda: create_post_request_model([]))
-=======
-    post_request_model: type = attr.ib(factory=lambda: create_post_request_model([]))
 
->>>>>>> tests/swagger_docs
+
+
+
     @staticmethod
     def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
